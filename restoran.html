@@ -13,6 +13,8 @@
     margin: 0; padding: 30px;
     display: flex;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
   }
 
   .container {
@@ -50,6 +52,7 @@
     font-size: 15px;
     transition: border-color 0.3s ease;
   }
+
   input[type="text"]:focus,
   select:focus,
   input[type="number"]:focus {
@@ -92,6 +95,7 @@
     font-weight: 500;
     color: #2c3e50;
   }
+
   #cart-list li:last-child {
     border-bottom: none;
   }
@@ -113,6 +117,7 @@
   .input-group select {
     flex: 1.8;
   }
+
   .input-group input[type="number"] {
     flex: 0.6;
   }
@@ -126,41 +131,56 @@
     margin-bottom: 15px;
     display: none;
   }
-</style>
 
+  footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Q-FOOD</h1>
-    <div id="notif" class="notif">Pesanan berhasil dikirim!</div>
 
-    <label>Nama Pelanggan:</label>
-    <input type="text" id="customer-name" placeholder="Masukkan nama Anda" />
+<div class="container">
+  <h1>Q-FOOD</h1>
+  <div id="notif" class="notif">Pesanan berhasil dikirim!</div>
 
-    <label>Menu:</label>
-    <div class="input-group">
-      <select id="menu-select"></select>
-      <input type="number" id="qty" value="1" min="1" />
-      <button onclick="addToCart()" style="flex: 1;">Tambah</button>
-    </div>
+  <label>Nama Pelanggan:</label>
+  <input type="text" id="customer-name" placeholder="Masukkan nama Anda" />
 
-    <h3>Keranjang:</h3>
-    <ul id="cart-list"></ul>
-    <div id="total-harga">Total: Rp0</div>
-
-    <button onclick="pesanSekarang()">Pesan Sekarang (Cash)</button>
+  <label>Menu:</label>
+  <div class="input-group">
+    <select id="menu-select"></select>
+    <input type="number" id="qty" value="1" min="1" />
+    <button onclick="addToCart()" style="flex: 1;">Tambah</button>
   </div>
+
+  <label>Metode Pembayaran:</label>
+  <select id="payment-method">
+    <option value="CASH">Cash</option>
+    <option value="QRIS">QRIS</option>
+  </select>
+
+  <h3>Keranjang:</h3>
+  <ul id="cart-list"></ul>
+  <div id="total-harga">Total: Rp0</div>
+
+  <button onclick="pesanSekarang()">Pesan Sekarang</button>
+  <button onclick="resetKeranjang()" style="margin-top:10px; background-color:#95a5a6;">Reset Keranjang</button>
+</div>
+
+<footer>&copy; 2025 Q‑Food | Aplikasi Kasir oleh Rifqi</footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDgZ-fi-UstmPzKskaaBks8EIl9tz6cnro",
     authDomain: "restoran-app-ca694.firebaseapp.com",
     databaseURL: "https://restoran-app-ca694-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "restoran-app-ca694",
-    storageBucket: "restoran-app-ca694.firebasestorage.app",
+    storageBucket: "restoran-app-ca694.appspot.com",
     messagingSenderId: "579179210926",
     appId: "1:579179210926:web:8046a1275c27d123c6e53f",
     measurementId: "G-M54820D410"
@@ -168,11 +188,9 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Variabel global untuk stok barang yang diambil dari Firebase
   let barangList = [];
   let cart = [];
 
-  // Load data barang dari Firebase, dan update menu dropdown
   function loadMenuOptions() {
     db.ref('/barang').once('value').then(snapshot => {
       barangList = [];
@@ -187,23 +205,21 @@
     });
   }
 
-  // Update select option berdasarkan stok barang
   function updateMenuDropdown() {
     const select = document.getElementById("menu-select");
     select.innerHTML = "";
     barangList.forEach(b => {
-      if (b.stok > 0) {
-        select.innerHTML += `<option value="${b.id}">${b.nama} - Rp${b.harga.toLocaleString()} (Stok: ${b.stok})</option>`;
-      }
+      const disabled = b.stok === 0 ? 'disabled' : '';
+      select.innerHTML += `<option value="${b.id}" ${disabled}>
+        ${b.nama} - Rp${b.harga.toLocaleString()} ${b.stok === 0 ? '(Habis)' : `(Stok: ${b.stok})`}
+      </option>`;
     });
   }
 
-  // Cari barang dari ID
   function findBarangById(id) {
     return barangList.find(b => b.id === id);
   }
 
-  // Tambah item ke keranjang
   function addToCart() {
     const barangId = document.getElementById("menu-select").value;
     const qty = parseInt(document.getElementById("qty").value);
@@ -211,17 +227,12 @@
       alert("Jumlah harus minimal 1");
       return;
     }
-
     const barang = findBarangById(barangId);
-    if (!barang) {
-      alert("Barang tidak ditemukan");
-      return;
-    }
+    if (!barang) return;
     if (qty > barang.stok) {
-      alert(`Stok ${barang.nama} tidak cukup! Stok tersedia: ${barang.stok}`);
+      alert(`Stok ${barang.nama} tidak cukup!`);
       return;
     }
-
     let found = cart.find(i => i.barangId === barangId);
     if (found) {
       if (found.qty + qty > barang.stok) {
@@ -235,7 +246,6 @@
     renderCart();
   }
 
-  // Render isi keranjang di layar
   function renderCart() {
     const ul = document.getElementById("cart-list");
     const totalDiv = document.getElementById("total-harga");
@@ -244,7 +254,7 @@
 
     cart.forEach((item, index) => {
       const barang = findBarangById(item.barangId);
-      if (!barang) return; // skip jika barang tidak ada
+      if (!barang) return;
       const itemTotal = barang.harga * item.qty;
       total += itemTotal;
       ul.innerHTML += `<li>
@@ -256,7 +266,6 @@
     totalDiv.textContent = `Total: Rp${total.toLocaleString()}`;
   }
 
-  // Hapus item dari keranjang
   function hapusDariKeranjang(index) {
     if (confirm("Yakin ingin menghapus item ini dari keranjang?")) {
       cart.splice(index, 1);
@@ -264,7 +273,13 @@
     }
   }
 
-  // Tampilkan notifikasi
+  function resetKeranjang() {
+    if (confirm("Yakin ingin mengosongkan keranjang?")) {
+      cart = [];
+      renderCart();
+    }
+  }
+
   function tampilkanNotifikasi(teks) {
     const notif = document.getElementById("notif");
     notif.textContent = teks;
@@ -272,9 +287,24 @@
     setTimeout(() => notif.style.display = "none", 3000);
   }
 
-  // Fungsi pesan sekarang dengan update stok
+  function cetakStruk(order) {
+    let struk = `Struk Pesanan - Q-FOOD\n\n`;
+    struk += `Nama: ${order.customerName}\n`;
+    struk += `Waktu: ${order.waktu}\n\n`;
+    order.items.forEach(i => {
+      struk += `${i.nama} x${i.qty} = Rp${(i.harga * i.qty).toLocaleString()}\n`;
+    });
+    struk += `\nTotal: Rp${order.total.toLocaleString()}\n`;
+    struk += `Metode: ${order.paymentMethod}\n`;
+
+    const win = window.open('', '', 'width=400,height=600');
+    win.document.write(`<pre>${struk}</pre>`);
+    win.print();
+  }
+
   async function pesanSekarang() {
     const customerName = document.getElementById("customer-name").value.trim();
+    const paymentMethod = document.getElementById("payment-method").value;
     if (customerName === "") {
       alert("Nama pelanggan harus diisi!");
       return;
@@ -284,17 +314,12 @@
       return;
     }
 
-    // Cek stok cukup & hitung total
     let total = 0;
     let itemsDetail = [];
     for (let item of cart) {
       const barang = findBarangById(item.barangId);
-      if (!barang) {
-        alert("Barang tidak ditemukan!");
-        return;
-      }
-      if (item.qty > barang.stok) {
-        alert(`Stok barang ${barang.nama} tidak cukup! Stok: ${barang.stok}`);
+      if (!barang || item.qty > barang.stok) {
+        alert(`Stok barang ${barang?.nama || 'tidak ditemukan'} tidak cukup!`);
         return;
       }
       total += barang.harga * item.qty;
@@ -305,43 +330,39 @@
       });
     }
 
+    const waktu = new Date().toLocaleString("id-ID");
     const orderData = {
-      customerName: customerName,
+      customerName,
       items: itemsDetail,
-      total: total,
-      paymentMethod: "CASH",
+      total,
+      paymentMethod,
       timestamp: Date.now(),
+      waktu,
       status: "pending"
     };
 
     const newOrderKey = db.ref().child('orders').push().key;
-    let updates = {};
-    updates['/orders/' + newOrderKey] = orderData;
+    let updates = { [`/orders/${newOrderKey}`]: orderData };
 
-    // Update stok barang di Firebase sekaligus
     for (let item of cart) {
       const barang = findBarangById(item.barangId);
-      const stokBaru = barang.stok - item.qty;
-      updates[`/barang/${item.barangId}/stok`] = stokBaru;
+      updates[`/barang/${item.barangId}/stok`] = barang.stok - item.qty;
     }
 
     try {
       await db.ref().update(updates);
       tampilkanNotifikasi("Pesanan berhasil dibuat dan stok diperbarui!");
+      cetakStruk(orderData);
       cart = [];
       renderCart();
       document.getElementById("customer-name").value = "";
-      loadMenuOptions(); // refresh menu dropdown dengan stok terbaru
+      loadMenuOptions();
     } catch (err) {
       alert("Gagal mengirim pesanan: " + err.message);
     }
   }
 
-  // Load data saat halaman siap
-  window.onload = function () {
-    loadMenuOptions();
-  };
+  window.onload = loadMenuOptions;
 </script>
-
 </body>
 </html>
