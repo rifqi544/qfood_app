@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard – Q‑Food Kasir</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { margin: 0; display: flex; min-height: 100vh; background: #f6f6f6; }
+    .hidden { display: none; }
+    .sidebar {
+      width: 230px; background: #297ab9; color: white; padding: 20px;
+      display: flex; flex-direction: column;
+    }
+    .sidebar h2 { margin-top:0; text-align:center; }
+    .sidebar a {
+      color: white; text-decoration: none; margin:8px 0; padding:10px; border-radius:6px;
+      cursor:pointer; transition:0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active { background: #025f9e; }
+    .main {
+      flex:1; display:flex; flex-direction:column;
+    }
+    header {
+      background: #0473bd; color: white; padding:20px; position:relative;
+      display:flex; align-items:center; justify-content:center;
+    }
+    #datetime { position:absolute; right:140px; }
+    .logout-btn {
+      position:absolute; top:20px; right:20px;
+      background:#e74c3c; color:white; border:none;
+      padding:8px 14px; border-radius:6px; cursor:pointer;
+    }
+    .content {
+      flex:1; padding:20px; overflow:auto;
+    }
+    section { display:none; }
+    section.active { display:block; }
+    .card {
+      background:white; padding:20px; border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:20px;
+    }
+    .order, .expense-item {
+      background:white; padding:15px; border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:12px;
+    }
+    .order p, .expense-item p { margin:6px 0; }
+    .order button, .expense-item button {
+      background:#0473bd; color:white; border:none; padding:6px 14px;
+      border-radius:6px; cursor:pointer; margin-right:6px;
+    }
+    input[type="text"], input[type="number"] {
+      padding:8px; border:1px solid #ccc; border-radius:6px; margin-right:8px;
+    }
+    #dashboard .stats {
+      display:flex; flex-wrap:wrap; gap:20px;
+    }
+    .stats .stat {
+      flex:1; min-width:220px; padding:20px;
+      border-radius:10px; color:white;
+    }
+    .stat.income { background:#f39c12; }
+    .stat.expense { background:#e74c3c; }
+    .stat.profit { background:#2ecc71; }
+    .modal {
+      display:none; position:fixed; z-index:999;
+      left:0; top:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
+    }
+    .modal-content {
+      background:white; padding:20px; border-radius:10px;
+      width:360px; box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { margin-top:0; }
+    .modal-buttons { text-align:center; margin-top:12px; }
+    .modal-buttons button {
+      margin:4px; padding:8px 16px; border:none; border-radius:6px; cursor:pointer;
+    }
+    #print-btn { background:#2980b9; color:white; }
+    #close-btn { background:#c0392b; color:white; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Q‑Food Kasir</h2>
+    <a onclick="show('dashboard')" class="active">Dashboard</a>
+    <a onclick="show('pesanan')">Pesanan</a>
+    <a onclick="show('pengeluaran')">Pengeluaran</a>
+    <a onclick="show('laporan')">Laporan Keuangan</a>
+    <a onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main">
+    <header>
+      <h1>Dashboard Kasir</h1>
+      <div id="datetime"></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="content">
+      <section id="dashboard" class="active">
+        <div class="card stats">
+          <div class="stat income">
+            <h3>Total Pemasukan</h3>
+            <p>Rp <span id="stat-income">0</span></p>
+          </div>
+          <div class="stat expense">
+            <h3>Total Pengeluaran</h3>
+            <p>Rp <span id="stat-expense">0</span></p>
+          </div>
+          <div class="stat profit">
+            <h3>Keuntungan Bersih</h3>
+            <p>Rp <span id="stat-profit">0</span></p>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Statistik Hari Ini</h3>
+          <p>Pesanan Lunas: <strong><span id="stat-orders">0</span></strong></p>
+          <p>Update terakhir: <span id="last-update">-</span></p>
+        </div>
+      </section>
+
+      <section id="pesanan">
+        <h2>Daftar Pesanan</h2>
+        <div id="orders"></div>
+      </section>
+
+      <section id="pengeluaran">
+        <h2>Pengeluaran</h2>
+        <form onsubmit="tambahPengeluaran(event)">
+          <input type="text" id="exp-desc" placeholder="Deskripsi" required />
+          <input type="number" id="exp-amt" placeholder="Jumlah (Rp)" required />
+          <button type="submit">Tambah</button>
+        </form>
+        <div id="exps-list"></div>
+      </section>
+
+      <section id="laporan">
+        <h2>Laporan Keuangan</h2>
+        <div class="card">
+          <p><strong>Total Pemasukan: Rp</strong><span id="lap-inc">0</span></p>
+          <p><strong>Total Pengeluaran: Rp</strong><span id="lap-exp">0</span></p>
+          <p><strong>Laba Bersih: Rp</strong><span id="lap-prof">0</span></p>
+        </div>
+      </section>
+
+    </div>
+
+    <footer>&copy; 2025 Q‑Food | Aplikasi Kasir oleh Rifqi</footer>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h3>Struk Pesanan</h3>
+      <div id="struk-detail"></div>
+      <div class="modal-buttons">
+        <button id="print-btn">Cetak</button>
+        <button id="close-btn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgZ-fi-UstmPzKskaaBks8EIl9tz6cnro",
+      authDomain: "restoran-app-ca694.firebaseapp.com",
+      databaseURL: "https://restoran-app-ca694-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "restoran-app-ca694",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let orders = {}, expenses = {};
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return window.location = 'index.html';
+      fetchData();
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => window.location = 'index.html');
+    }
+
+    function fetchData() {
+      db.ref('orders').on('value', snap => {
+        orders = snap.val() || {};
+        renderOrders();
+        calcStats();
+      });
+      db.ref('pengeluaran').on('value', snap => {
+        expenses = snap.val() || {};
+        renderExpenses();
+        calcStats();
+      });
+    }
+
+    function show(id) {
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelector(`.sidebar a[onclick="show('${id}')"]`).classList.add('active');
+    }
+
+    function renderOrders() {
+      const el = document.getElementById('orders');
+      el.innerHTML = '';
+      for (let k in orders) {
+        const o = orders[k];
+        const bayar = o.uangDibayar||0;
+        const kembali = Math.max(0, bayar - o.total);
+        const paid = o.status === 'paid';
+        const btnPaid = paid
+          ? '<button onclick="openStruk(`'+k+'`)">Struk</button>'
+          : '<button onclick="markPaid(`'+k+'`)">Tandai Lunas</button>';
+        el.insertAdjacentHTML('beforeend', `
+          <div class="order">
+            <p><strong>${o.customerName}</strong> — ${o.items.map(i=>i.menu+'×'+i.qty).join(', ')}</p>
+            <p>Total: Rp${o.total.toLocaleString()}</p>
+            <p>
+              <input type="number" id="u-${k}" value="${bayar}" min="0" step="1000" />
+              <button onclick="savePay('${k}')">Simpan</button>
+            </p>
+            <p>Kembali: Rp<span id="k-${k}">${kembali.toLocaleString()}</span></p>
+            <p>Metode: ${o.paymentMethod}</p>
+            <p><small>${new Date(o.timestamp).toLocaleString()}</small></p>
+            ${btnPaid}
+            <button onclick="deleteOrder('${k}')">Hapus</button>
+          </div>`);
+      }
+    }
+
+    function renderExpenses() {
+      const el = document.getElementById('exps-list');
+      el.innerHTML = '';
+      for (let k in expenses) {
+        const e = expenses[k];
+        el.insertAdjacentHTML('beforeend', `
+          <div class="expense-item">
+            <p>${e.nama}: Rp${e.jumlah.toLocaleString()}</p>
+            <p><small>${new Date(e.timestamp).toLocaleString()}</small></p>
+          </div>`);
+      }
+    }
+
+    function markPaid(k) { db.ref('orders/'+k).update({status:'paid'}); }
+    function deleteOrder(k) { if (confirm('Hapus pesanan?')) db.ref('orders/'+k).remove(); }
+
+    function savePay(k) {
+      const val = parseInt(document.getElementById(`u-${k}`).value) || 0;
+      db.ref('orders/'+k).update({uangDibayar: val});
+    }
+
+    function openStruk(k) {
+      const o = orders[k];
+      const bayar = o.uangDibayar||0;
+      const kembali = Math.max(0, bayar - o.total);
+      const items = o.items.map(i=>`<li>${i.menu}×${i.qty}</li>`).join('');
+      document.getElementById('struk-detail').innerHTML = `
+        <p><strong>${o.customerName}</strong></p><ul>${items}</ul>
+        <p>Total: Rp${o.total.toLocaleString()}</p><p>Bayar: Rp${bayar.toLocaleString()}</p>
+        <p>Kembali: Rp${kembali.toLocaleString()}</p>
+        <p><em>${new Date(o.timestamp).toLocaleString()}</em></p>`;
+      document.getElementById('modal').style.display='flex';
+    }
+
+    document.getElementById('print-btn').onclick = () => {
+      const c=document.querySelector('.modal-content').innerHTML;
+      const w=window.open(); w.document.write(c); w.print(); w.close();
+    };
+    document.getElementById('close-btn').onclick = () => document.getElementById('modal').style.display='none';
+
+    function tambahPengeluaran(e) {
+      e.preventDefault();
+      const nama=document.getElementById('exp-desc').value;
+      const jumlah=parseInt(document.getElementById('exp-amt').value)||0;
+      if (!nama||jumlah<=0) return alert('Isi data valid.');
+      db.ref('pengeluaran').push({ nama, jumlah, timestamp:Date.now() });
+    }
+
+    function calcStats() {
+      const totalIncome = Object.values(orders).filter(o=>o.status==='paid').reduce((s,o)=>s+(o.total||0),0);
+      const totalExp = Object.values(expenses).reduce((s,e)=>s+(e.jumlah||0),0);
+      const totalOrders = Object.values(orders).filter(o=>o.status==='paid').length;
+      const profit = totalIncome - totalExp;
+
+      ['stat-income','lap-inc'].forEach(id => document.getElementById(id).textContent = totalIncome.toLocaleString());
+      ['stat-expense','lap-exp'].forEach(id => document.getElementById(id).textContent = totalExp.toLocaleString());
+      ['stat-profit','lap-prof'].forEach(id => document.getElementById(id).textContent = profit.toLocaleString());
+      document.getElementById('stat-orders').textContent = totalOrders;
+      document.getElementById('last-update').textContent = new Date().toLocaleString('id-ID');
+    }
+
+    function updateDateTime() {
+      const now=new Date();
+      now.setHours(now.getHours()+7);
+      document.getElementById('datetime').textContent = now.toLocaleDateString('id-ID', {weekday:'long',day:'numeric',month:'long',year:'numeric'})+' - '+now.toLocaleTimeString('id-ID')+' WIB';
+    }
+  </script>
+</body>
+</html>

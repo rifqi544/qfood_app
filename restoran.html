@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Restoran Online - Q-FOOD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f4f8;
+    margin: 0; padding: 30px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    max-width: 450px;
+    width: 100%;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 600;
+  }
+
+  label {
+    font-weight: 600;
+    color: #34495e;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  input[type="text"],
+  select,
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1.5px solid #bdc3c7;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus,
+  select:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+
+  button {
+    background-color: #3498db;
+    border: none;
+    padding: 12px 25px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  #cart-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 15px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f9f9f9;
+  }
+
+  #cart-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid #e1e1e1;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  #cart-list li:last-child {
+    border-bottom: none;
+  }
+
+  #total-harga {
+    text-align: right;
+    font-weight: bold;
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .input-group select {
+    flex: 1.8;
+  }
+  .input-group input[type="number"] {
+    flex: 0.6;
+  }
+
+  .notif {
+    background-color: #2ecc71;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none;
+  }
+</style>
+
+</head>
+<body>
+  <div class="container">
+    <h1>Q-FOOD</h1>
+    <div id="notif" class="notif">Pesanan berhasil dikirim!</div>
+
+    <label>Nama Pelanggan:</label>
+    <input type="text" id="customer-name" placeholder="Masukkan nama Anda" />
+
+    <label>Menu:</label>
+    <div class="input-group">
+      <select id="menu-select"></select>
+      <input type="number" id="qty" value="1" min="1" />
+      <button onclick="addToCart()" style="flex: 1;">Tambah</button>
+    </div>
+
+    <h3>Keranjang:</h3>
+    <ul id="cart-list"></ul>
+    <div id="total-harga">Total: Rp0</div>
+
+    <button onclick="pesanSekarang()">Pesan Sekarang (Cash)</button>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDgZ-fi-UstmPzKskaaBks8EIl9tz6cnro",
+    authDomain: "restoran-app-ca694.firebaseapp.com",
+    databaseURL: "https://restoran-app-ca694-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restoran-app-ca694",
+    storageBucket: "restoran-app-ca694.firebasestorage.app",
+    messagingSenderId: "579179210926",
+    appId: "1:579179210926:web:8046a1275c27d123c6e53f",
+    measurementId: "G-M54820D410"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Variabel global untuk stok barang yang diambil dari Firebase
+  let barangList = [];
+  let cart = [];
+
+  // Load data barang dari Firebase, dan update menu dropdown
+  function loadMenuOptions() {
+    db.ref('/barang').once('value').then(snapshot => {
+      barangList = [];
+      snapshot.forEach(child => {
+        const b = child.val();
+        b.id = child.key;
+        barangList.push(b);
+      });
+      updateMenuDropdown();
+    }).catch(err => {
+      alert("Gagal memuat data barang: " + err.message);
+    });
+  }
+
+  // Update select option berdasarkan stok barang
+  function updateMenuDropdown() {
+    const select = document.getElementById("menu-select");
+    select.innerHTML = "";
+    barangList.forEach(b => {
+      if (b.stok > 0) {
+        select.innerHTML += `<option value="${b.id}">${b.nama} - Rp${b.harga.toLocaleString()} (Stok: ${b.stok})</option>`;
+      }
+    });
+  }
+
+  // Cari barang dari ID
+  function findBarangById(id) {
+    return barangList.find(b => b.id === id);
+  }
+
+  // Tambah item ke keranjang
+  function addToCart() {
+    const barangId = document.getElementById("menu-select").value;
+    const qty = parseInt(document.getElementById("qty").value);
+    if (qty < 1) {
+      alert("Jumlah harus minimal 1");
+      return;
+    }
+
+    const barang = findBarangById(barangId);
+    if (!barang) {
+      alert("Barang tidak ditemukan");
+      return;
+    }
+    if (qty > barang.stok) {
+      alert(`Stok ${barang.nama} tidak cukup! Stok tersedia: ${barang.stok}`);
+      return;
+    }
+
+    let found = cart.find(i => i.barangId === barangId);
+    if (found) {
+      if (found.qty + qty > barang.stok) {
+        alert(`Stok ${barang.nama} tidak cukup untuk jumlah ini!`);
+        return;
+      }
+      found.qty += qty;
+    } else {
+      cart.push({ barangId, qty });
+    }
+    renderCart();
+  }
+
+  // Render isi keranjang di layar
+  function renderCart() {
+    const ul = document.getElementById("cart-list");
+    const totalDiv = document.getElementById("total-harga");
+    ul.innerHTML = "";
+    let total = 0;
+
+    cart.forEach((item, index) => {
+      const barang = findBarangById(item.barangId);
+      if (!barang) return; // skip jika barang tidak ada
+      const itemTotal = barang.harga * item.qty;
+      total += itemTotal;
+      ul.innerHTML += `<li>
+        ${barang.nama} x${item.qty} - Rp${itemTotal.toLocaleString()}
+        <button onclick="hapusDariKeranjang(${index})" style="float:right;background:#e74c3c;color:white;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;">Hapus</button>
+      </li>`;
+    });
+
+    totalDiv.textContent = `Total: Rp${total.toLocaleString()}`;
+  }
+
+  // Hapus item dari keranjang
+  function hapusDariKeranjang(index) {
+    if (confirm("Yakin ingin menghapus item ini dari keranjang?")) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+  }
+
+  // Tampilkan notifikasi
+  function tampilkanNotifikasi(teks) {
+    const notif = document.getElementById("notif");
+    notif.textContent = teks;
+    notif.style.display = "block";
+    setTimeout(() => notif.style.display = "none", 3000);
+  }
+
+  // Fungsi pesan sekarang dengan update stok
+  async function pesanSekarang() {
+    const customerName = document.getElementById("customer-name").value.trim();
+    if (customerName === "") {
+      alert("Nama pelanggan harus diisi!");
+      return;
+    }
+    if (cart.length === 0) {
+      alert("Keranjang kosong!");
+      return;
+    }
+
+    // Cek stok cukup & hitung total
+    let total = 0;
+    let itemsDetail = [];
+    for (let item of cart) {
+      const barang = findBarangById(item.barangId);
+      if (!barang) {
+        alert("Barang tidak ditemukan!");
+        return;
+      }
+      if (item.qty > barang.stok) {
+        alert(`Stok barang ${barang.nama} tidak cukup! Stok: ${barang.stok}`);
+        return;
+      }
+      total += barang.harga * item.qty;
+      itemsDetail.push({
+        nama: barang.nama,
+        harga: barang.harga,
+        qty: item.qty
+      });
+    }
+
+    const orderData = {
+      customerName: customerName,
+      items: itemsDetail,
+      total: total,
+      paymentMethod: "CASH",
+      timestamp: Date.now(),
+      status: "pending"
+    };
+
+    const newOrderKey = db.ref().child('orders').push().key;
+    let updates = {};
+    updates['/orders/' + newOrderKey] = orderData;
+
+    // Update stok barang di Firebase sekaligus
+    for (let item of cart) {
+      const barang = findBarangById(item.barangId);
+      const stokBaru = barang.stok - item.qty;
+      updates[`/barang/${item.barangId}/stok`] = stokBaru;
+    }
+
+    try {
+      await db.ref().update(updates);
+      tampilkanNotifikasi("Pesanan berhasil dibuat dan stok diperbarui!");
+      cart = [];
+      renderCart();
+      document.getElementById("customer-name").value = "";
+      loadMenuOptions(); // refresh menu dropdown dengan stok terbaru
+    } catch (err) {
+      alert("Gagal mengirim pesanan: " + err.message);
+    }
+  }
+
+  // Load data saat halaman siap
+  window.onload = function () {
+    loadMenuOptions();
+  };
+</script>
+
+</body>
+</html>
