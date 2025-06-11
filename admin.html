@@ -1,488 +1,368 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Q-Food</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f6f6f6;
-      margin: 0;
-      display: flex;
-    }
-    header {
-      background-color: #0473bd;
-      color: white;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-      height: 50px;
-      box-sizing: border-box;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .logout {
-      background-color: #e74c3c;
-      color: white;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    aside {
-      width: 220px;
-      background-color: #2c3e50;
-      height: 100vh;
-      position: fixed;
-      top: 50px;
-      left: 0;
-      padding-top: 20px;
-    }
-    aside ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    aside ul li a {
-      display: block;
-      padding: 14px 20px;
-      text-decoration: none;
-      color: #ecf0f1;
-      font-weight: 500;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-    }
-    aside ul li a:hover {
-      background-color: #34495e;
-    }
-    main {
-      margin-left: 220px;
-      padding: 80px 20px 40px;
-      flex: 1;
-    }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #000;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    .export-btn {
-      background-color: #2ecc71;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .form-input {
-      margin: 5px 0;
-    }
-    input {
-      padding: 6px;
-      margin-right: 6px;
-    }
-    footer {
-      text-align: center;
-      padding: 16px;
-      background-color: #f0f0f0;
-      color: #333;
-      margin-top: 40px;
-    }
-    .page {
-      display: none;
-    }
-    .page.active {
-      display: block;
-    }
-    /* Modal styles */
-    #editModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-    #editModal > div {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      width: 300px;
-      box-sizing: border-box;
-    }
-    #editModal input {
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 8px;
-      box-sizing: border-box;
-    }
-    #editModal button {
-      margin-right: 8px;
-      padding: 8px 12px;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-    }
-    #editModal button:first-child {
-      background-color: #2ecc71;
-      color: white;
-    }
-    #editModal button:last-child {
-      background-color: #e74c3c;
-      color: white;
-    }
-    /* Buttons in table */
-    table button {
-      padding: 4px 8px;
-      margin-right: 6px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    table button:nth-child(1) {
-      background-color: #3498db;
-      color: white;
-    }
-    table button:nth-child(2) {
-      background-color: #e74c3c;
-      color: white;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Restoran Online - Q-FOOD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f4f8;
+    margin: 0; padding: 30px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    max-width: 450px;
+    width: 100%;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 600;
+  }
+
+  label {
+    font-weight: 600;
+    color: #34495e;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  input[type="text"],
+  select,
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1.5px solid #bdc3c7;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+  }
+
+  input[type="text"]:focus,
+  select:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+
+  button {
+    background-color: #3498db;
+    border: none;
+    padding: 12px 25px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  #cart-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 15px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f9f9f9;
+  }
+
+  #cart-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid #e1e1e1;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  #cart-list li:last-child {
+    border-bottom: none;
+  }
+
+  #total-harga {
+    text-align: right;
+    font-weight: bold;
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .input-group select {
+    flex: 1.8;
+  }
+
+  .input-group input[type="number"] {
+    flex: 0.6;
+  }
+
+  .notif {
+    background-color: #2ecc71;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+</style>
 </head>
 <body>
-  <aside>
-    <ul>
-      <li><a href="#" onclick="showPage('pemasukan')">Laporan Pemasukan</a></li>
-      <li><a href="#" onclick="showPage('pengeluaran')">Laporan Pengeluaran</a></li>
-      <li><a href="#" onclick="showPage('akun')">Buat Akun Kasir</a></li>
-      <li><a href="#" onclick="showPage('barang')">Input Barang & Harga Stok</a></li>
-    </ul>
-  </aside>
 
-  <div style="flex: 1;">
-    <header>
-      <h1>Admin Q-Food</h1>
-      <button class="logout" onclick="logout()">Logout</button>
-    </header>
-    <main>
-      <div id="pemasukan" class="page active">
-        <h2>Laporan Pemasukan</h2>
-        <table id="income-table">
-          <thead>
-            <tr>
-              <th>Nama</th>
-              <th>Pesanan</th>
-              <th>Total</th>
-              <th>Metode</th>
-              <th>Tanggal</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <button class="export-btn" onclick="exportTableToExcel('income-table', 'laporan_pemasukan')">Cetak Excel</button>
-      </div>
+<div class="container">
+  <h1>Q-FOOD</h1>
+  <div id="notif" class="notif">Pesanan berhasil dikirim!</div>
 
-      <div id="pengeluaran" class="page">
-        <h2>Laporan Pengeluaran</h2>
-        <input type="text" id="desc" placeholder="Deskripsi" />
-        <input type="number" id="amount" placeholder="Jumlah" />
-        <button onclick="addExpense()">Tambah</button>
-        <table id="expense-table">
-          <thead>
-            <tr>
-              <th>Deskripsi</th>
-              <th>Jumlah</th>
-              <th>Tanggal</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <button class="export-btn" onclick="exportTableToExcel('expense-table', 'laporan_pengeluaran')">Cetak Excel</button>
-      </div>
+  <label>Nama Pelanggan:</label>
+  <input type="text" id="customer-name" placeholder="Masukkan nama Anda" />
 
-      <div id="akun" class="page">
-        <h2>Buat Akun Kasir</h2>
-        <input class="form-input" type="text" id="kasirEmail" placeholder="Email Kasir" />
-        <input class="form-input" type="password" id="kasirPassword" placeholder="Password" />
-        <button onclick="buatAkunKasir()">Buat Akun</button>
-      </div>
-
-      <div id="barang" class="page">
-        <h2>Input Barang & Harga Stok</h2>
-        <input type="text" id="namaBarang" placeholder="Nama Barang" />
-        <input type="number" id="hargaBarang" placeholder="Harga" />
-        <input type="number" id="stokBarang" placeholder="Stok" />
-        <button onclick="tambahBarang()">Simpan</button>
-
-        <table id="barang-table">
-          <thead>
-            <tr>
-              <th>Nama Barang</th>
-              <th>Harga</th>
-              <th>Stok</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </main>
-    <footer>
-      &copy; 2025 Q-Food Admin Panel
-    </footer>
+  <label>Menu:</label>
+  <div class="input-group">
+    <select id="menu-select"></select>
+    <input type="number" id="qty" value="1" min="1" />
+    <button onclick="addToCart()" style="flex: 1;">Tambah</button>
   </div>
 
-  <!-- Modal Edit Barang -->
-  <div id="editModal">
-    <div>
-      <h3>Edit Barang</h3>
-      <input type="text" id="editNama" placeholder="Nama Barang" />
-      <input type="number" id="editHarga" placeholder="Harga" />
-      <input type="number" id="editStok" placeholder="Stok" />
-      <button onclick="simpanEdit()">Simpan</button>
-      <button onclick="tutupModal()">Batal</button>
-    </div>
-  </div>
+  <label>Metode Pembayaran:</label>
+  <select id="payment-method">
+    <option value="CASH">Cash</option>
+    <option value="QRIS">QRIS</option>
+  </select>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDgZ-fi-UstmPzKskaaBks8EIl9tz6cnro",
-      authDomain: "restoran-app-ca694.firebaseapp.com",
-      databaseURL: "https://restoran-app-ca694-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "restoran-app-ca694",
-      storageBucket: "restoran-app-ca694.appspot.com",
-      messagingSenderId: "579179210926",
-      appId: "1:579179210926:web:ee3a6d1b7a7e1e1a14365c"
+  <h3>Keranjang:</h3>
+  <ul id="cart-list"></ul>
+  <div id="total-harga">Total: Rp0</div>
+
+  <button onclick="pesanSekarang()">Pesan Sekarang</button>
+  <button onclick="resetKeranjang()" style="margin-top:10px; background-color:#95a5a6;">Reset Keranjang</button>
+</div>
+
+<footer>&copy; 2025 Q‑Food | Aplikasi Kasir oleh Rifqi</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDgZ-fi-UstmPzKskaaBks8EIl9tz6cnro",
+    authDomain: "restoran-app-ca694.firebaseapp.com",
+    databaseURL: "https://restoran-app-ca694-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restoran-app-ca694",
+    storageBucket: "restoran-app-ca694.appspot.com",
+    messagingSenderId: "579179210926",
+    appId: "1:579179210926:web:8046a1275c27d123c6e53f",
+    measurementId: "G-M54820D410"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let barangList = [];
+  let cart = [];
+
+  function loadMenuOptions() {
+    db.ref('/barang').once('value').then(snapshot => {
+      barangList = [];
+      snapshot.forEach(child => {
+        const b = child.val();
+        b.id = child.key;
+        barangList.push(b);
+      });
+      updateMenuDropdown();
+    }).catch(err => {
+      alert("Gagal memuat data barang: " + err.message);
+    });
+  }
+
+  function updateMenuDropdown() {
+    const select = document.getElementById("menu-select");
+    select.innerHTML = "";
+    barangList.forEach(b => {
+      const disabled = b.stok === 0 ? 'disabled' : '';
+      select.innerHTML += `<option value="${b.id}" ${disabled}>
+        ${b.nama} - Rp${b.harga.toLocaleString()} ${b.stok === 0 ? '(Habis)' : `(Stok: ${b.stok})`}
+      </option>`;
+    });
+  }
+
+  function findBarangById(id) {
+    return barangList.find(b => b.id === id);
+  }
+
+  function addToCart() {
+    const barangId = document.getElementById("menu-select").value;
+    const qty = parseInt(document.getElementById("qty").value);
+    if (qty < 1) {
+      alert("Jumlah harus minimal 1");
+      return;
+    }
+    const barang = findBarangById(barangId);
+    if (!barang) return;
+    if (qty > barang.stok) {
+      alert(`Stok ${barang.nama} tidak cukup!`);
+      return;
+    }
+    let found = cart.find(i => i.barangId === barangId);
+    if (found) {
+      if (found.qty + qty > barang.stok) {
+        alert(`Stok ${barang.nama} tidak cukup untuk jumlah ini!`);
+        return;
+      }
+      found.qty += qty;
+    } else {
+      cart.push({ barangId, qty });
+    }
+    renderCart();
+  }
+
+  function renderCart() {
+    const ul = document.getElementById("cart-list");
+    const totalDiv = document.getElementById("total-harga");
+    ul.innerHTML = "";
+    let total = 0;
+
+    cart.forEach((item, index) => {
+      const barang = findBarangById(item.barangId);
+      if (!barang) return;
+      const itemTotal = barang.harga * item.qty;
+      total += itemTotal;
+      ul.innerHTML += `<li>
+        ${barang.nama} x${item.qty} - Rp${itemTotal.toLocaleString()}
+        <button onclick="hapusDariKeranjang(${index})" style="float:right;background:#e74c3c;color:white;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;">Hapus</button>
+      </li>`;
+    });
+
+    totalDiv.textContent = `Total: Rp${total.toLocaleString()}`;
+  }
+
+  function hapusDariKeranjang(index) {
+    if (confirm("Yakin ingin menghapus item ini dari keranjang?")) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+  }
+
+  function resetKeranjang() {
+    if (confirm("Yakin ingin mengosongkan keranjang?")) {
+      cart = [];
+      renderCart();
+    }
+  }
+
+  function tampilkanNotifikasi(teks) {
+    const notif = document.getElementById("notif");
+    notif.textContent = teks;
+    notif.style.display = "block";
+    setTimeout(() => notif.style.display = "none", 3000);
+  }
+
+  function cetakStruk(order) {
+    let struk = `Struk Pesanan - Q-FOOD\n\n`;
+    struk += `Nama: ${order.customerName}\n`;
+    struk += `Waktu: ${order.waktu}\n\n`;
+    order.items.forEach(i => {
+      struk += `${i.nama} x${i.qty} = Rp${(i.harga * i.qty).toLocaleString()}\n`;
+    });
+    struk += `\nTotal: Rp${order.total.toLocaleString()}\n`;
+    struk += `Metode: ${order.paymentMethod}\n`;
+
+    const win = window.open('', '', 'width=400,height=600');
+    win.document.write(`<pre>${struk}</pre>`);
+    win.print();
+  }
+
+  async function pesanSekarang() {
+    const customerName = document.getElementById("customer-name").value.trim();
+    const paymentMethod = document.getElementById("payment-method").value;
+    if (customerName === "") {
+      alert("Nama pelanggan harus diisi!");
+      return;
+    }
+    if (cart.length === 0) {
+      alert("Keranjang kosong!");
+      return;
+    }
+
+    let total = 0;
+    let itemsDetail = [];
+    for (let item of cart) {
+      const barang = findBarangById(item.barangId);
+      if (!barang || item.qty > barang.stok) {
+        alert(`Stok barang ${barang?.nama || 'tidak ditemukan'} tidak cukup!`);
+        return;
+      }
+      total += barang.harga * item.qty;
+      itemsDetail.push({
+        nama: barang.nama,
+        harga: barang.harga,
+        qty: item.qty
+      });
+    }
+
+    const waktu = new Date().toLocaleString("id-ID");
+    const orderData = {
+      customerName,
+      items: itemsDetail,
+      total,
+      paymentMethod,
+      timestamp: Date.now(),
+      waktu,
+      status: "pending"
     };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+    const newOrderKey = db.ref().child('orders').push().key;
+    let updates = { [`/orders/${newOrderKey}`]: orderData };
 
-    // Navigation
-    function showPage(id) {
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-      });
-      document.getElementById(id).classList.add('active');
+    for (let item of cart) {
+      const barang = findBarangById(item.barangId);
+      updates[`/barang/${item.barangId}/stok`] = barang.stok - item.qty;
     }
 
-    // Logout
-    function logout() {
-      auth.signOut().then(() => {
-        alert('Anda berhasil logout.');
-        location.href = 'login.html';
-      });
+    try {
+      await db.ref().update(updates);
+      tampilkanNotifikasi("Pesanan berhasil dibuat dan stok diperbarui!");
+      cetakStruk(orderData);
+      cart = [];
+      renderCart();
+      document.getElementById("customer-name").value = "";
+      loadMenuOptions();
+    } catch (err) {
+      alert("Gagal mengirim pesanan: " + err.message);
     }
+  }
 
-    // ----- Laporan Pemasukan -----
-    function loadIncome() {
-      const tbody = document.querySelector('#income-table tbody');
-      tbody.innerHTML = '';
-      db.ref('pemasukan').once('value', snapshot => {
-        snapshot.forEach(child => {
-          const item = child.val();
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${item.nama || '-'}</td>
-            <td>${item.pesanan || '-'}</td>
-            <td>Rp${parseInt(item.total || 0).toLocaleString()}</td>
-            <td>${item.metode || '-'}</td>
-            <td>${item.tanggal || '-'}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    // ----- Laporan Pengeluaran -----
-    function loadExpense() {
-      const tbody = document.querySelector('#expense-table tbody');
-      tbody.innerHTML = '';
-      db.ref('pengeluaran').once('value', snapshot => {
-        snapshot.forEach(child => {
-          const item = child.val();
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${item.deskripsi || '-'}</td>
-            <td>Rp${parseInt(item.jumlah || 0).toLocaleString()}</td>
-            <td>${item.tanggal || '-'}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function addExpense() {
-      const desc = document.getElementById('desc').value.trim();
-      const amount = parseInt(document.getElementById('amount').value);
-      if (!desc || isNaN(amount) || amount <= 0) {
-        return alert('Isi deskripsi dan jumlah dengan benar!');
-      }
-      const tanggal = new Date().toLocaleDateString('id-ID');
-      const newKey = db.ref().child('pengeluaran').push().key;
-      db.ref('pengeluaran/' + newKey).set({
-        deskripsi: desc,
-        jumlah: amount,
-        tanggal
-      }).then(() => {
-        alert('Pengeluaran berhasil ditambahkan.');
-        document.getElementById('desc').value = '';
-        document.getElementById('amount').value = '';
-        loadExpense();
-      });
-    }
-
-    // ----- Buat Akun Kasir -----
-    function buatAkunKasir() {
-      const email = document.getElementById('kasirEmail').value.trim();
-      const password = document.getElementById('kasirPassword').value;
-      if (!email || !password) {
-        return alert('Email dan password harus diisi.');
-      }
-      auth.createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        alert('Akun kasir berhasil dibuat.');
-        document.getElementById('kasirEmail').value = '';
-        document.getElementById('kasirPassword').value = '';
-      })
-      .catch(error => {
-        alert('Error: ' + error.message);
-      });
-    }
-
-    // ----- Input Barang & Harga Stok -----
-    function tambahBarang() {
-      const nama = document.getElementById('namaBarang').value.trim();
-      const harga = parseInt(document.getElementById('hargaBarang').value);
-      const stok = parseInt(document.getElementById('stokBarang').value);
-
-      if (!nama || isNaN(harga) || isNaN(stok)) {
-        return alert('Semua data harus diisi dengan benar.');
-      }
-
-      const newKey = db.ref().child('barang').push().key;
-      db.ref('barang/' + newKey).set({
-        nama, harga, stok
-      }).then(() => {
-        alert('Barang berhasil disimpan.');
-        document.getElementById('namaBarang').value = '';
-        document.getElementById('hargaBarang').value = '';
-        document.getElementById('stokBarang').value = '';
-        loadBarang();
-      });
-    }
-
-    function loadBarang() {
-      const tbody = document.querySelector('#barang-table tbody');
-      tbody.innerHTML = '';
-      db.ref('barang').once('value', snapshot => {
-        snapshot.forEach(child => {
-          const id = child.key;
-          const item = child.val();
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${item.nama}</td>
-            <td>Rp${parseInt(item.harga).toLocaleString()}</td>
-            <td>${item.stok}</td>
-            <td>
-              <button onclick="editBarang('${id}', '${item.nama}', ${item.harga}, ${item.stok})">Edit</button>
-              <button onclick="hapusBarang('${id}')">Hapus</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function hapusBarang(id) {
-      if (confirm('Yakin ingin menghapus barang ini?')) {
-        db.ref('barang/' + id).remove().then(() => {
-          alert('Barang dihapus.');
-          loadBarang();
-        });
-      }
-    }
-
-    let barangEditId = '';
-
-    function editBarang(id, nama, harga, stok) {
-      barangEditId = id;
-      document.getElementById('editNama').value = nama;
-      document.getElementById('editHarga').value = harga;
-      document.getElementById('editStok').value = stok;
-      document.getElementById('editModal').style.display = 'flex';
-    }
-
-    function tutupModal() {
-      document.getElementById('editModal').style.display = 'none';
-      barangEditId = '';
-    }
-
-    function simpanEdit() {
-      const nama = document.getElementById('editNama').value.trim();
-      const harga = parseInt(document.getElementById('editHarga').value);
-      const stok = parseInt(document.getElementById('editStok').value);
-
-      if (!nama || isNaN(harga) || isNaN(stok)) {
-        return alert('Semua data harus diisi.');
-      }
-
-      db.ref('barang/' + barangEditId).update({ nama, harga, stok }).then(() => {
-        alert('Barang berhasil diperbarui.');
-        tutupModal();
-        loadBarang();
-      });
-    }
-
-    // ----- Export ke Excel sederhana -----
-    function exportTableToExcel(tableID, filename = '') {
-      const downloadLink = document.createElement('a');
-      const dataType = 'application/vnd.ms-excel';
-      const tableSelect = document.getElementById(tableID);
-      const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
-      filename = filename ? filename + '.xls' : 'excel_data.xls';
-
-      downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
-      downloadLink.download = filename;
-      downloadLink.click();
-    }
-
-    // Load default data saat halaman dimuat
-    window.onload = function() {
-      loadIncome();
-      loadExpense();
-      loadBarang();
-    };
-  </script>
+  window.onload = loadMenuOptions;
+</script>
 </body>
 </html>
